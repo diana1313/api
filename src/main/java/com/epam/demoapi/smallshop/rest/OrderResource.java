@@ -22,14 +22,4 @@ public class OrderResource {
         return orderService.createOrder(orderedProducts);
     }
 
-    @GetMapping
-    public List<Order> getOrders() {
-        return orderService.getOrders();
-    }
-
-    @GetMapping
-    public Order getOrder(Integer id) {
-        return orderService.getOrder(id);
-    }
-
 }
