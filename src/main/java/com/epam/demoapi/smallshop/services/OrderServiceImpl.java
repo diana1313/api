@@ -22,19 +22,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order createOrder(List<OrderedProduct> orderedProductDtos) {
-        List<Product> orderedProducts = orderedProductDtos.stream()
-                .map(op -> Pair.of(op.getQuantity(), getProduct(op.getId())))
-                .filter(pair -> pair.getSecond().isPresent())
-                .map(pair -> Pair.of(pair.getFirst(), pair.getSecond().get()))
-                .flatMap(pair -> Stream.generate(pair::getSecond).limit(pair.getFirst()))
-                .collect(Collectors.toList());
+        List<Product> orderedProducts = getOrderedProducts(orderedProductDtos);
 
         return orderRepository.save(
                 Order.builder()
-                .products(orderedProducts)
-                .totalPrice(orderedProducts.stream().mapToInt(Product::getPrice).sum())
-                .build()
-        ) ;
+                        .products(orderedProducts)
+                        .totalPrice(orderedProducts.stream().mapToInt(Product::getPrice).sum())
+                        .build()
+        );
     }
 
     @Override
@@ -47,7 +42,33 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.getOne(id);
     }
 
+    @Override
+    public void deleteOrder(Integer id) {
+        orderRepository.deleteById(id);
+    }
+
+    @Override
+    public Order updateOrder(Integer id, List<OrderedProduct> orderedProductDtos) {
+        List<Product> orderedProducts = getOrderedProducts(orderedProductDtos);
+
+        return orderRepository.save(Order.builder()
+                .id(id)
+                .products(orderedProducts)
+                .totalPrice(orderedProducts.stream().mapToInt(Product::getPrice).sum())
+                .build());
+    }
+
     private Optional<Product> getProduct(Integer id) {
         return productRepository.findById(id);
     }
+
+    private List<Product> getOrderedProducts(List<OrderedProduct> orderedProductDtos) {
+        return orderedProductDtos.stream()
+                .map(op -> Pair.of(op.getQuantity(), getProduct(op.getId())))
+                .filter(pair -> pair.getSecond().isPresent())
+                .map(pair -> Pair.of(pair.getFirst(), pair.getSecond().get()))
+                .flatMap(pair -> Stream.generate(pair::getSecond).limit(pair.getFirst()))
+                .collect(Collectors.toList());
+    }
+
 }
