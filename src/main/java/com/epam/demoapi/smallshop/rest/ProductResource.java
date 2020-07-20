@@ -15,7 +15,7 @@ public class ProductResource {
     private ProductService productService;
 
     @GetMapping
-    public List<Product> getProducts() {
+    public List<Product> getProducts(@RequestHeader("accept-language") String language) {
         return productService.getProducts();
     }
 
